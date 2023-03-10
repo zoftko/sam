@@ -1,5 +1,3 @@
-#include <cstdint>
-
 #include "gtest/gtest.h"
 
 extern "C" {
@@ -8,13 +6,10 @@ extern "C" {
 
 class TestBasebandTx : public testing::Test {
    protected:
-    uint8_t port;
+    uint8_t port = 0x00;
     const uint8_t pin = 0;
 
-    void SetUp() override {
-        port = 0x00;
-        tx_setup(&port, pin);
-    }
+    void SetUp() override { tx_setup(&port, pin, nullptr); }
 
     /**
      * Transmit the specified data and store the transmitted bytes. This means transmitted bytes
@@ -53,14 +48,14 @@ class TestBasebandTx : public testing::Test {
 };
 
 TEST_F(TestBasebandTx, RegisterTxFrame) {
-    struct Frame frame {};
-    ASSERT_EQ(tx_frame(frame), 0);
+    Frame frame{};
+    ASSERT_EQ(tx_frame(&frame), 0);
 }
 
 TEST_F(TestBasebandTx, RegisterTxFrameBusy) {
-    struct Frame frame {};
-    ASSERT_EQ(tx_frame(frame), 0);
-    ASSERT_EQ(tx_frame(frame), 1);
+    Frame frame{};
+    ASSERT_EQ(tx_frame(&frame), 0);
+    ASSERT_EQ(tx_frame(&frame), 1);
 }
 
 TEST_F(TestBasebandTx, TxBitZeroRun) {
@@ -146,12 +141,12 @@ TEST_F(TestBasebandTx, TxBytesWithZeroRun) {
 
 TEST_F(TestBasebandTx, TxFrameTXRQ) {
     uint8_t payload[1] = {0xAA};
-    struct Frame frame = {
+    Frame frame = {
         .address = {.to = 0x07, .from = 0x01},
         .dinfo = {.type = TXRQ, .size = 0x01},
         .payload = payload,
         .crc = 0x5555};
-    ASSERT_EQ(0, tx_frame(frame));
+    ASSERT_EQ(0, tx_frame(&frame));
 
     uint8_t tx_state, end, buffer_idx;
     uint8_t buffer[8] = {0};

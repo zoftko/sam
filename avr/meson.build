@@ -1,12 +1,17 @@
-testtx = executable(
-    'testtx', 'testtx.c', include_directories: inc,  name_suffix: 'elf', link_with: tx
+lcd = library('lcd', 'lcd.c', include_directories: inc)
+interactive_tx = executable(
+  'interactive_tx',
+  'interactive_tx.c',
+  include_directories: inc,
+  name_suffix: 'elf',
+  link_with: [tx, lcd, bits]
 )
 
 objcopy = find_program('avr-objcopy')
-testtx_hex = custom_target(
-    'testtx_hex',
-    input: testtx,
-    output: 'testtx.hex',
-    command: [objcopy, '-j', '.text', '-j', '.data', '-O', 'ihex', '@INPUT@',  '@OUTPUT@'],
-    build_by_default: true
+interactive_tx_hex = custom_target(
+  'interactive_tx_hex',
+  input: interactive_tx,
+  output: 'interactive_tx.hex',
+  command: [objcopy, '-j', '.text', '-j', '.data', '-O', 'ihex', '@INPUT@',  '@OUTPUT@'],
+  build_by_default: true
 )
